@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flashcards · Lumina</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script>
+    (function() {
+      var t = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- ====== SIDEBAR ====== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-text">Lumin<em>a</em></span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a href="../index.html" class="nav-item" data-page="dashboard">
+        <span class="nav-item-icon">⊞</span> Dashboard
+      </a>
+      <div class="nav-section-label">Módulos</div>
+      <a href="apuntes.html" class="nav-item" data-page="apuntes">
+        <span class="nav-item-icon">📝</span> Apuntes
+      </a>
+      <a href="examenes.html" class="nav-item" data-page="examenes">
+        <span class="nav-item-icon">📅</span> Exámenes
+      </a>
+      <a href="flashcards.html" class="nav-item" data-page="flashcards">
+        <span class="nav-item-icon">🃏</span> Flashcards
+      </a>
+    </nav>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- ====== PAGE WRAPPER ====== -->
+  <div class="page-wrapper">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" id="hamburger">☰</button>
+        <nav class="breadcrumb">
+          <a href="../index.html" class="bc-item">Dashboard</a>
+          <span class="bc-sep">/</span>
+          <span class="bc-item active">Flashcards</span>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" onclick="toggleTheme()" title="Cambiar tema">
+          <span id="theme-icon">🌙</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="page-content">
+
+      <!-- =================== SECCIÓN MAZOS =================== -->
+      <div id="mazos-section">
+
+        <div class="page-header">
+          <div class="page-header-info">
+            <div class="page-title">Flashcards</div>
+            <div class="page-subtitle">Mazos y repaso</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary" onclick="abrirModalMazo()">+ Nuevo mazo</button>
+          </div>
+        </div>
+
+        <!-- Grid de mazos -->
+        <div class="mazos-grid" id="mazos-container"></div>
+
+        <!-- Formulario agregar tarjeta -->
+        <div style="margin-top:28px">
+          <div class="section-title">Agregar tarjeta</div>
+          <div class="add-card-panel" id="add-card-form">
+            <form id="form-tarjeta" onsubmit="event.preventDefault(); guardarTarjeta()">
+              <div class="form-group">
+                <label for="tarjeta-mazo">Mazo destino</label>
+                <select id="tarjeta-mazo">
+                  <option value="">Elegí un mazo...</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="tarjeta-frente">Frente (pregunta)</label>
+                  <textarea id="tarjeta-frente" rows="4" placeholder="ej. ¿Qué es una derivada?" required></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="tarjeta-dorso">Dorso (respuesta)</label>
+                  <textarea id="tarjeta-dorso" rows="4" placeholder="ej. La tasa de cambio instantáneo de una función." required></textarea>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary">Agregar tarjeta</button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- =================== SECCIÓN REPASO =================== -->
+      <div id="repaso-section" style="display:none">
+
+        <div class="page-header">
+          <div class="page-header-info">
+            <div class="page-title">Repasando: <span id="repaso-nombre"></span></div>
+            <div class="page-subtitle">Hacé clic en la tarjeta para ver la respuesta</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-ghost" onclick="renderMazos()">← Volver a mazos</button>
+          </div>
+        </div>
+
+        <!-- Barra de progreso -->
+        <div style="max-width:560px;margin:0 auto 20px;display:flex;align-items:center;gap:14px">
+          <div class="progress-bar-wrap" style="flex:1">
+            <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+          </div>
+          <span class="progress-label" id="progress-label">0 / 0</span>
+        </div>
+
+        <!-- Flashcard + botones -->
+        <div id="repaso-cards" class="repaso-container active">
+
+          <div class="flashcard" id="flashcard-el">
+            <div class="flashcard-inner">
+              <div class="flashcard-front">
+                <div class="flashcard-label">Pregunta</div>
+                <div class="flashcard-text" id="card-frente"></div>
+                <div class="flashcard-hint">Clic para ver la respuesta</div>
+              </div>
+              <div class="flashcard-back">
+                <div class="flashcard-label">Respuesta</div>
+                <div class="flashcard-text" id="card-dorso"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="repaso-actions">
+            <button id="btn-revelar" class="btn btn-primary" onclick="revelarRespuesta()">
+              Ver respuesta
+            </button>
+            <button id="btn-mal" class="btn-mal" onclick="responder(false)" style="display:none">
+              ✗ No lo sabía
+            </button>
+            <button id="btn-bien" class="btn-bien" onclick="responder(true)" style="display:none">
+              ✓ Lo sabía
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Resultado final -->
+        <div class="resultado-repaso" id="resultado-repaso">
+          <div class="resultado-icon" id="resultado-icon">🎉</div>
+          <h2 id="resultado-msg">¡Repaso completado!</h2>
+          <div class="resultado-stats">
+            <div class="resultado-stat" style="color:var(--green-text)">
+              <span id="resultado-bien">0</span>
+              <span>Lo sabía</span>
+            </div>
+            <div class="resultado-stat" style="color:var(--red-text)">
+              <span id="resultado-mal">0</span>
+              <span>A repasar</span>
+            </div>
+            <div class="resultado-stat" style="color:var(--primary-text)">
+              <span id="resultado-pct">0%</span>
+              <span>Efectividad</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;justify-content:center;margin-top:8px">
+            <button class="btn btn-primary" onclick="repetirRepaso()">Repetir repaso</button>
+            <button class="btn btn-ghost" onclick="renderMazos()">Volver a mazos</button>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Modal: Nuevo Mazo -->
+  <div class="modal-overlay" id="modal-mazo">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Nuevo mazo</h2>
+        <button class="modal-close" onclick="cerrarModalMazo()">✕</button>
+      </div>
+      <form id="form-mazo" onsubmit="event.preventDefault(); guardarMazo()">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="mazo-nombre">Nombre del mazo</label>
+            <input type="text" id="mazo-nombre" placeholder="ej. Anatomía — Huesos" required autofocus>
+          </div>
+          <div class="form-group">
+            <label for="mazo-emoji">Emoji</label>
+            <input type="text" id="mazo-emoji" placeholder="🃏" maxlength="4">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" onclick="cerrarModalMazo()">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Crear mazo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/flashcards.js"></script>
+
+</body>
+</html>

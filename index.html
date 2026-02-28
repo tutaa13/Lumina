@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumina · Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script>
+    (function() {
+      var t = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- ====== SIDEBAR ====== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-text">Lumin<em>a</em></span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a href="index.html" class="nav-item" data-page="dashboard">
+        <span class="nav-item-icon">⊞</span> Dashboard
+      </a>
+      <div class="nav-section-label">Módulos</div>
+      <a href="pages/apuntes.html" class="nav-item" data-page="apuntes">
+        <span class="nav-item-icon">📝</span> Apuntes
+      </a>
+      <a href="pages/examenes.html" class="nav-item" data-page="examenes">
+        <span class="nav-item-icon">📅</span> Exámenes
+      </a>
+      <a href="pages/flashcards.html" class="nav-item" data-page="flashcards">
+        <span class="nav-item-icon">🃏</span> Flashcards
+      </a>
+    </nav>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- ====== PAGE WRAPPER ====== -->
+  <div class="page-wrapper">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" id="hamburger">☰</button>
+        <nav class="breadcrumb">
+          <span class="bc-item active">Dashboard</span>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" onclick="toggleTheme()" title="Cambiar tema">
+          <span id="theme-icon">🌙</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="page-content">
+
+      <div class="page-header">
+        <div class="page-header-info">
+          <div class="page-title">Dashboard</div>
+          <div class="page-subtitle">Plan de estudio · Lumina</div>
+        </div>
+      </div>
+
+      <!-- Racha de estudio -->
+      <div class="streak-widget" id="streak-widget"></div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="background:var(--color-apuntes-light)">📝</div>
+          <div class="stat-info">
+            <div class="stat-number" id="num-materias">0</div>
+            <div class="stat-label">Materias</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="background:var(--color-examenes-light)">📅</div>
+          <div class="stat-info">
+            <div class="stat-number" id="dias-examen">—</div>
+            <div class="stat-label">Días al próximo examen</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="background:var(--color-flashcards-light)">🃏</div>
+          <div class="stat-info">
+            <div class="stat-number" id="num-flashcards">0</div>
+            <div class="stat-label">Flashcards creadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module cards -->
+      <div class="modules-grid">
+        <a href="pages/apuntes.html" class="module-card module-apuntes">
+          <div class="module-icon">📝</div>
+          <h2>Apuntes</h2>
+          <p>Cargá el material por materia y buscalo cuando lo necesitás.</p>
+          <span class="module-cta">Ir a Apuntes →</span>
+        </a>
+        <a href="pages/examenes.html" class="module-card module-examenes">
+          <div class="module-icon">📅</div>
+          <h2>Exámenes</h2>
+          <p>Registrá las fechas. Lumina te muestra cuántos días quedan.</p>
+          <span class="module-cta">Ir a Exámenes →</span>
+        </a>
+        <a href="pages/flashcards.html" class="module-card module-flashcards">
+          <div class="module-icon">🃏</div>
+          <h2>Flashcards</h2>
+          <p>Creá mazos, repasá y marcá lo que ya sabés.</p>
+          <span class="module-cta">Ir a Flashcards →</span>
+        </a>
+      </div>
+
+      <!-- Upcoming exams -->
+      <div class="upcoming-card">
+        <div class="upcoming-card-header">
+          <h3>📋 Próximos exámenes</h3>
+          <a href="pages/examenes.html" class="btn btn-ghost btn-sm">Ver todos →</a>
+        </div>
+        <div class="upcoming-card-body" id="upcoming-list">
+          <p class="empty-msg" style="padding:16px 20px">
+            Sin exámenes registrados. <a href="pages/examenes.html">Cargá uno →</a>
+          </p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const materias = storageGet('materias') || [];
+      const examenes = storageGet('examenes') || [];
+      const mazos    = storageGet('mazos')    || [];
+
+      // Racha de estudio
+      const streak = getStreak();
+      const streakWidget = document.getElementById('streak-widget');
+      if (streak > 0) {
+        streakWidget.innerHTML = `
+          <span class="streak-flame">🔥</span>
+          <span class="streak-count">${streak} día${streak !== 1 ? 's' : ''}</span>
+          <span class="streak-text">de racha de estudio — ¡seguí así!</span>
+        `;
+      } else {
+        streakWidget.innerHTML = `
+          <span class="streak-flame">✨</span>
+          <span class="streak-count streak-zero">Sin racha activa</span>
+          <span class="streak-text">Guardá un apunte o repasá flashcards para empezar tu racha</span>
+        `;
+      }
+
+      const totalCards = mazos.reduce((s, m) => s + (m.cards ? m.cards.length : 0), 0);
+
+      document.getElementById('num-materias').textContent   = materias.length;
+      document.getElementById('num-flashcards').textContent = totalCards;
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const upcoming = examenes
+        .filter(e => new Date(e.fecha + 'T00:00:00') >= today)
+        .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+      if (upcoming.length > 0) {
+        const diff = daysUntil(upcoming[0].fecha);
+        document.getElementById('dias-examen').textContent = diff === 0 ? 'HOY' : diff;
+
+        const list = document.getElementById('upcoming-list');
+        list.innerHTML = upcoming.slice(0, 5).map(e => {
+          const d     = daysUntil(e.fecha);
+          const label = d === 0 ? 'HOY' : d === 1 ? 'Mañana' : `en ${d} días`;
+          const cls   = d <= 3 ? 'urgent' : d <= 7 ? 'warning' : '';
+          return `
+            <div class="exam-item">
+              <div class="exam-info">
+                <strong>${e.nombre}</strong>
+                <span class="exam-materia">${e.materia} · ${formatDate(e.fecha)}</span>
+              </div>
+              <span class="exam-days ${cls}">${label}</span>
+            </div>`;
+        }).join('');
+      }
+    });
+  </script>
+
+</body>
+</html>

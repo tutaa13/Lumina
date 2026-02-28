@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exámenes · Lumina</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script>
+    (function() {
+      var t = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- ====== SIDEBAR ====== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-text">Lumin<em>a</em></span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a href="../index.html" class="nav-item" data-page="dashboard">
+        <span class="nav-item-icon">⊞</span> Dashboard
+      </a>
+      <div class="nav-section-label">Módulos</div>
+      <a href="apuntes.html" class="nav-item" data-page="apuntes">
+        <span class="nav-item-icon">📝</span> Apuntes
+      </a>
+      <a href="examenes.html" class="nav-item" data-page="examenes">
+        <span class="nav-item-icon">📅</span> Exámenes
+      </a>
+      <a href="flashcards.html" class="nav-item" data-page="flashcards">
+        <span class="nav-item-icon">🃏</span> Flashcards
+      </a>
+    </nav>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- ====== PAGE WRAPPER ====== -->
+  <div class="page-wrapper">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" id="hamburger">☰</button>
+        <nav class="breadcrumb">
+          <a href="../index.html" class="bc-item">Dashboard</a>
+          <span class="bc-sep">/</span>
+          <span class="bc-item active">Exámenes</span>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" onclick="toggleTheme()" title="Cambiar tema">
+          <span id="theme-icon">🌙</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="page-content">
+
+      <div class="page-header">
+        <div class="page-header-info">
+          <div class="page-title">Exámenes</div>
+          <div class="page-subtitle">Fechas y días restantes</div>
+        </div>
+      </div>
+
+      <!-- Referencia de colores -->
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px;font-size:0.78rem;color:var(--text-muted)">
+        <span style="display:flex;align-items:center;gap:5px">
+          <span style="width:10px;height:10px;border-radius:50%;background:var(--red);display:inline-block"></span>
+          ≤ 3 días
+        </span>
+        <span style="display:flex;align-items:center;gap:5px">
+          <span style="width:10px;height:10px;border-radius:50%;background:var(--yellow);display:inline-block"></span>
+          4–7 días
+        </span>
+        <span style="display:flex;align-items:center;gap:5px">
+          <span style="width:10px;height:10px;border-radius:50%;background:var(--color-examenes);display:inline-block"></span>
+          &gt; 7 días
+        </span>
+      </div>
+
+      <div class="examenes-layout">
+
+        <!-- Lista de exámenes -->
+        <div id="examenes-lista"></div>
+
+        <!-- Formulario -->
+        <aside class="exam-form-panel">
+          <h3>Agregar examen</h3>
+          <form id="form-examen" onsubmit="event.preventDefault(); guardarExamen()">
+
+            <div class="form-group">
+              <label for="examen-nombre">Nombre del examen</label>
+              <input type="text" id="examen-nombre" placeholder="ej. Parcial 1 — Álgebra" required>
+            </div>
+
+            <div class="form-group">
+              <label for="examen-materia">Materia</label>
+              <select id="examen-materia">
+                <option value="">Elegí una materia...</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="examen-fecha">Fecha</label>
+                <input type="date" id="examen-fecha" required>
+              </div>
+              <div class="form-group">
+                <label for="examen-tipo">Tipo</label>
+                <select id="examen-tipo">
+                  <option value="Parcial">Parcial</option>
+                  <option value="Final">Final</option>
+                  <option value="Recuperatorio">Recuperatorio</option>
+                  <option value="Trabajo Práctico">Trabajo Práctico</option>
+                  <option value="Coloquio">Coloquio</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="examen-notas">Notas (opcional)</label>
+              <textarea id="examen-notas" rows="3" placeholder="Temas, aula, modalidad..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%">
+              Agregar examen
+            </button>
+
+          </form>
+
+          <p style="margin-top:16px;font-size:0.78rem;color:var(--text-muted);padding-top:14px;border-top:1px solid var(--border)">
+            ¿No ves tu materia? <a href="apuntes.html" style="color:var(--primary)">Creala en Apuntes →</a>
+          </p>
+        </aside>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/examenes.js"></script>
+
+</body>
+</html>
