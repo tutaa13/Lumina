@@ -1,7 +1,7 @@
 // PDF.js se carga desde CDN en nueva-materia.html
 // https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js
 
-const PDF_CHAR_LIMIT = 50000;
+const PDF_CHAR_LIMIT = 5000;
 
 async function extraerTextoPDF(archivo) {
   const arrayBuffer = await archivo.arrayBuffer();

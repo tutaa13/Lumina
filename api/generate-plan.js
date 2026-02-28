@@ -5,9 +5,9 @@ export default async function handler(req, res) {
 
   const { materialesTexto: materialesRaw, fechaExamen, nombreMateria, metodologia, preferencias } = req.body;
 
-  // Limitar materiales a 8000 caracteres para no exceder el límite de tokens
+  // Limitar materiales a 20000 caracteres para no exceder el límite de tokens de Groq
   const materialesTexto = materialesRaw
-    ? materialesRaw.slice(0, 8000) + (materialesRaw.length > 8000 ? '\n[materiales truncados por longitud]' : '')
+    ? materialesRaw.slice(0, 20000) + (materialesRaw.length > 20000 ? '\n[materiales truncados por longitud]' : '')
     : '';
 
   const diasRestantes = Math.ceil(
