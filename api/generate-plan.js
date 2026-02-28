@@ -3,7 +3,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { materialesTexto, fechaExamen, nombreMateria, metodologia, preferencias } = req.body;
+  const { materialesTexto: materialesRaw, fechaExamen, nombreMateria, metodologia, preferencias } = req.body;
+
+  // Limitar materiales a 8000 caracteres para no exceder el límite de tokens
+  const materialesTexto = materialesRaw
+    ? materialesRaw.slice(0, 8000) + (materialesRaw.length > 8000 ? '\n[materiales truncados por longitud]' : '')
+    : '';
 
   const diasRestantes = Math.ceil(
     (new Date(fechaExamen) - new Date()) / (1000 * 60 * 60 * 24)
@@ -76,7 +81,7 @@ Respondé ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto 
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 8000
+        max_tokens: 4000
       })
     });
 
