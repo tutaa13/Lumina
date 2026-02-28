@@ -140,10 +140,11 @@ function _initActiveNav() {
     item.classList.remove('active');
     const page = item.getAttribute('data-page');
     const isActive =
-      (page === 'dashboard'   && (path.endsWith('index.html') || path.endsWith('/app-estudio/') || path === '/')) ||
-      (page === 'apuntes'     && path.endsWith('apuntes.html'))   ||
-      (page === 'examenes'    && path.endsWith('examenes.html'))  ||
-      (page === 'flashcards'  && path.endsWith('flashcards.html'));
+      (page === 'dashboard'     && (path.endsWith('index.html') || path.endsWith('/app-estudio/') || path === '/')) ||
+      (page === 'apuntes'       && path.endsWith('apuntes.html'))       ||
+      (page === 'examenes'      && path.endsWith('examenes.html'))      ||
+      (page === 'flashcards'    && path.endsWith('flashcards.html'))    ||
+      (page === 'nueva-materia' && (path.endsWith('nueva-materia.html') || path.endsWith('plan.html')));
     if (isActive) item.classList.add('active');
   });
 }

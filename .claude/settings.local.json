@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(start:*)"
+      "Bash(start:*)",
+      "Bash(cd C:\\\\Users\\\\usuario\\\\Documents\\\\app-estudio:*)",
+      "Bash(vercel:*)",
+      "Bash(node:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

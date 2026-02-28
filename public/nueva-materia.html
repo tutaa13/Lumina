@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nueva Materia · Lumina</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script>
+    (function() {
+      var t = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    /* ---- Estilos específicos de esta página ---- */
+    .nm-form {
+      max-width: 700px;
+    }
+
+    .nm-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 20px;
+    }
+
+    .nm-section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: 1.2rem;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .nm-section-subtitle {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    /* Drop zone */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: var(--bg);
+    }
+
+    .drop-zone:hover,
+    .drop-zone.drag-over {
+      border-color: var(--gold);
+      background: color-mix(in srgb, var(--gold) 6%, var(--bg));
+    }
+
+    .drop-zone-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .drop-zone p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .drop-zone strong {
+      color: var(--primary);
+      cursor: pointer;
+    }
+
+    #input-pdfs {
+      display: none;
+    }
+
+    /* PDF list */
+    .pdf-list {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .pdf-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+    }
+
+    .pdf-item-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .pdf-item-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-main);
+    }
+
+    .pdf-item-remove {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+
+    .pdf-item-remove:hover {
+      color: var(--red);
+    }
+
+    /* URL input */
+    .url-input-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .url-input-row input {
+      flex: 1;
+    }
+
+    .url-list {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .url-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+    }
+
+    .url-item-text {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--primary);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .url-item-remove {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0 4px;
+    }
+
+    .url-item-remove:hover {
+      color: var(--red);
+    }
+
+    /* Loading state */
+    .nm-loading {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 40px 0;
+      text-align: center;
+    }
+
+    .nm-loading.visible {
+      display: flex;
+    }
+
+    .nm-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .nm-loading-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: 1.1rem;
+      color: var(--text-main);
+    }
+
+    .nm-loading-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: -8px;
+    }
+
+    /* Error message */
+    .nm-error {
+      display: none;
+      background: color-mix(in srgb, var(--red) 10%, var(--surface));
+      border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
+      border-radius: 10px;
+      padding: 14px 18px;
+      color: var(--red);
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+    }
+
+    .nm-error.visible {
+      display: block;
+    }
+
+    /* Submit area */
+    .nm-submit-area {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-top: 8px;
+    }
+
+    .nm-tip {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====== SIDEBAR ====== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-text">Lumin<em>a</em></span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a href="index.html" class="nav-item" data-page="dashboard">
+        <span class="nav-item-icon">⊞</span> Dashboard
+      </a>
+      <div class="nav-section-label">Módulos</div>
+      <a href="pages/apuntes.html" class="nav-item" data-page="apuntes">
+        <span class="nav-item-icon">📝</span> Apuntes
+      </a>
+      <a href="pages/examenes.html" class="nav-item" data-page="examenes">
+        <span class="nav-item-icon">📅</span> Exámenes
+      </a>
+      <a href="pages/flashcards.html" class="nav-item" data-page="flashcards">
+        <span class="nav-item-icon">🃏</span> Flashcards
+      </a>
+      <div class="nav-section-label">IA</div>
+      <a href="nueva-materia.html" class="nav-item" data-page="nueva-materia">
+        <span class="nav-item-icon">✦</span> Nueva materia
+      </a>
+    </nav>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- ====== PAGE WRAPPER ====== -->
+  <div class="page-wrapper">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" id="hamburger">☰</button>
+        <nav class="breadcrumb">
+          <a href="index.html" class="bc-item">Dashboard</a>
+          <span class="bc-sep">/</span>
+          <span class="bc-item active">Nueva materia</span>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" onclick="toggleTheme()" title="Cambiar tema">
+          <span id="theme-icon">🌙</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="page-content">
+
+      <div class="page-header">
+        <div class="page-header-info">
+          <div class="page-title">Nueva materia</div>
+          <div class="page-subtitle">Cargá tus materiales y Lumina genera tu plan</div>
+        </div>
+      </div>
+
+      <div class="nm-form">
+
+        <!-- Error -->
+        <div class="nm-error" id="nm-error"></div>
+
+        <!-- Sección 1: Info básica -->
+        <div class="nm-section">
+          <div class="nm-section-title">Información básica</div>
+          <div class="nm-section-subtitle">Nombre de la materia y fecha del examen</div>
+
+          <div class="form-group">
+            <label for="nombre-materia">Nombre de la materia</label>
+            <input type="text" id="nombre-materia" placeholder="ej. Derecho Penal II" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fecha-examen">Fecha del examen</label>
+              <input type="date" id="fecha-examen" required>
+            </div>
+            <div class="form-group">
+              <label for="catedra">Cátedra / Profesor (opcional)</label>
+              <input type="text" id="catedra" placeholder="ej. Cátedra García">
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección 2: Metodología -->
+        <div class="nm-section">
+          <div class="nm-section-title">Metodología del examen</div>
+          <div class="nm-section-subtitle">¿Cómo es el examen? La IA adapta el plan a esto.</div>
+
+          <div class="form-group">
+            <label for="metodologia">Describí cómo funciona el examen</label>
+            <textarea id="metodologia" rows="4"
+              placeholder="Ej: El examen es oral. El profesor pregunta por sorteo de bolillas. Hay que desarrollar el tema completo y citar artículos del código. Suele preguntar casos prácticos al final."
+              required></textarea>
+          </div>
+        </div>
+
+        <!-- Sección 3: Materiales -->
+        <div class="nm-section">
+          <div class="nm-section-title">Materiales de estudio</div>
+          <div class="nm-section-subtitle">PDFs, apuntes o URLs de referencia. Si no cargás nada, la IA genera un plan general.</div>
+
+          <!-- Drop zone -->
+          <div class="drop-zone" id="drop-zone">
+            <div class="drop-zone-icon">📄</div>
+            <p>Arrastrá PDFs acá o <strong id="drop-click">hacé clic para seleccionar</strong></p>
+            <p style="margin-top:6px;font-size:0.75rem">Podés subir varios archivos. Máximo 50.000 caracteres por PDF.</p>
+          </div>
+          <input type="file" id="input-pdfs" accept=".pdf" multiple>
+
+          <div class="pdf-list" id="pdf-list"></div>
+
+          <!-- URLs -->
+          <div style="margin-top:20px">
+            <label style="font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--text-muted)">URLs de referencia (opcional)</label>
+            <div class="url-input-row">
+              <input type="url" id="input-url" placeholder="https://...">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="agregarURL()">Agregar</button>
+            </div>
+          </div>
+          <div class="url-list" id="url-list"></div>
+        </div>
+
+        <!-- Sección 4: Preferencias -->
+        <div class="nm-section">
+          <div class="nm-section-title">Preferencias (opcional)</div>
+          <div class="nm-section-subtitle">Horarios, tiempo disponible, días libres...</div>
+
+          <div class="form-group">
+            <label for="preferencias">Contale a Lumina cómo preferís estudiar</label>
+            <textarea id="preferencias" rows="3"
+              placeholder="Ej: Prefiero estudiar de tarde, máximo 90 minutos por día. Tengo los martes libres para estudiar más."></textarea>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="nm-loading" id="nm-loading">
+          <div class="nm-spinner"></div>
+          <div class="nm-loading-text">Lumina está analizando tus materiales...</div>
+          <div class="nm-loading-sub">Esto puede tardar unos segundos</div>
+        </div>
+
+        <!-- Submit -->
+        <div class="nm-submit-area" id="nm-submit-area">
+          <button type="button" class="btn btn-primary" id="btn-generar" onclick="generarPlan()">
+            Generar plan con IA
+          </button>
+          <span class="nm-tip">La IA leerá tus materiales y armará un plan día por día</span>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/pdf-processor.js"></script>
+  <script src="js/nueva-materia.js"></script>
+
+</body>
+</html>

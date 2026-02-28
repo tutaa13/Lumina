@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plan de Estudio · Lumina</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script>
+    (function() {
+      var t = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <style>
+    /* ---- Plan page styles ---- */
+
+    .plan-header {
+      margin-bottom: 28px;
+    }
+
+    .plan-materia {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: 2rem;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .plan-fecha {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Countdown strip */
+    .plan-countdown-strip {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 24px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .plan-countdown-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 2.5rem;
+      font-weight: 400;
+      line-height: 1;
+      color: var(--text-main);
+    }
+
+    .plan-countdown-num.urgent { color: var(--red); }
+    .plan-countdown-num.warning { color: var(--yellow); }
+    .plan-countdown-num.ok { color: var(--green); }
+
+    .plan-countdown-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .plan-countdown-sep {
+      width: 1px;
+      height: 36px;
+      background: var(--border);
+    }
+
+    .plan-resumen {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    /* Progress bar */
+    .plan-progress-wrap {
+      margin-bottom: 24px;
+    }
+
+    .plan-progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .plan-progress-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .plan-progress-pct {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--green);
+    }
+
+    .plan-progress-bar-outer {
+      height: 6px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .plan-progress-bar-fill {
+      height: 100%;
+      background: var(--green);
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+
+    /* Fases badges */
+    .plan-fases {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .fase-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.82rem;
+    }
+
+    .fase-badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .fase-badge-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .fase-badge-nombre {
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    /* Días section title */
+    .plan-dias-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: 1.4rem;
+      color: var(--text-main);
+      margin-bottom: 16px;
+    }
+
+    /* Día card */
+    .dia-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .dia-card:hover {
+      border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+    }
+
+    .dia-card.completado {
+      border-color: color-mix(in srgb, var(--green) 50%, var(--border));
+      background: color-mix(in srgb, var(--green) 4%, var(--surface));
+    }
+
+    .dia-card-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .dia-num-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .dia-card.completado .dia-num-badge {
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+    }
+
+    .dia-card-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .dia-titulo {
+      font-weight: 500;
+      font-size: 0.92rem;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dia-subtitulo {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dia-card-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .dia-tags {
+      display: flex;
+      gap: 4px;
+    }
+
+    .dia-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .dia-tag.teoria   { background: color-mix(in srgb, var(--primary) 12%, var(--bg)); color: var(--primary); border-color: color-mix(in srgb, var(--primary) 25%, transparent); }
+    .dia-tag.practica,
+    .dia-tag.casos    { background: color-mix(in srgb, var(--yellow) 15%, var(--bg)); color: color-mix(in srgb, var(--yellow) 70%, var(--text-main)); border-color: color-mix(in srgb, var(--yellow) 30%, transparent); }
+    .dia-tag.oral     { background: color-mix(in srgb, var(--red) 10%, var(--bg)); color: var(--red); border-color: color-mix(in srgb, var(--red) 25%, transparent); }
+    .dia-tag.repaso   { background: color-mix(in srgb, var(--green) 12%, var(--bg)); color: var(--green); border-color: color-mix(in srgb, var(--green) 25%, transparent); }
+    .dia-tag.simulacro { background: color-mix(in srgb, var(--gold) 15%, var(--bg)); color: var(--gold); border-color: color-mix(in srgb, var(--gold) 30%, transparent); }
+
+    .dia-tiempo {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .dia-chevron {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+
+    .dia-card.open .dia-chevron {
+      transform: rotate(90deg);
+    }
+
+    /* Día body (expandible) */
+    .dia-card-body {
+      display: none;
+      padding: 0 20px 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .dia-card.open .dia-card-body {
+      display: block;
+    }
+
+    .dia-fecha-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding: 12px 0 14px;
+      display: block;
+    }
+
+    .dia-pasos {
+      list-style: none;
+      margin: 0 0 16px;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .dia-paso {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.87rem;
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+
+    .dia-paso input[type="checkbox"] {
+      margin-top: 3px;
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      cursor: pointer;
+      accent-color: var(--green);
+    }
+
+    .dia-paso.marcado label {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .dia-paso label {
+      cursor: pointer;
+    }
+
+    .dia-nota {
+      background: color-mix(in srgb, var(--gold) 8%, var(--bg));
+      border-left: 3px solid var(--gold);
+      border-radius: 0 6px 6px 0;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      color: var(--text-main);
+      line-height: 1.5;
+      margin-bottom: 16px;
+      font-style: italic;
+    }
+
+    .dia-completar-btn {
+      width: 100%;
+    }
+
+    .dia-card.completado .dia-completar-btn {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    /* Empty state */
+    .plan-empty {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .plan-empty h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: 1.5rem;
+      color: var(--text-main);
+      margin-bottom: 12px;
+    }
+
+    .plan-empty p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====== SIDEBAR ====== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-text">Lumin<em>a</em></span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <a href="index.html" class="nav-item" data-page="dashboard">
+        <span class="nav-item-icon">⊞</span> Dashboard
+      </a>
+      <div class="nav-section-label">Módulos</div>
+      <a href="pages/apuntes.html" class="nav-item" data-page="apuntes">
+        <span class="nav-item-icon">📝</span> Apuntes
+      </a>
+      <a href="pages/examenes.html" class="nav-item" data-page="examenes">
+        <span class="nav-item-icon">📅</span> Exámenes
+      </a>
+      <a href="pages/flashcards.html" class="nav-item" data-page="flashcards">
+        <span class="nav-item-icon">🃏</span> Flashcards
+      </a>
+      <div class="nav-section-label">IA</div>
+      <a href="nueva-materia.html" class="nav-item" data-page="nueva-materia">
+        <span class="nav-item-icon">✦</span> Nueva materia
+      </a>
+    </nav>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- ====== PAGE WRAPPER ====== -->
+  <div class="page-wrapper">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" id="hamburger">☰</button>
+        <nav class="breadcrumb">
+          <a href="index.html" class="bc-item">Dashboard</a>
+          <span class="bc-sep">/</span>
+          <span class="bc-item active" id="bc-materia">Plan</span>
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" onclick="toggleTheme()" title="Cambiar tema">
+          <span id="theme-icon">🌙</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="page-content" id="plan-content">
+      <!-- Renderizado por plan.js -->
+    </main>
+
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/plan.js"></script>
+
+</body>
+</html>

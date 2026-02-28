@@ -34,6 +34,10 @@
       <a href="pages/flashcards.html" class="nav-item" data-page="flashcards">
         <span class="nav-item-icon">🃏</span> Flashcards
       </a>
+      <div class="nav-section-label">IA</div>
+      <a href="nueva-materia.html" class="nav-item" data-page="nueva-materia">
+        <span class="nav-item-icon">✦</span> Nueva materia
+      </a>
     </nav>
   </aside>
   <div class="sidebar-overlay" id="sidebar-overlay"></div>
@@ -116,6 +120,19 @@
         </a>
       </div>
 
+      <!-- IA: Planes de estudio -->
+      <div class="upcoming-card" style="margin-bottom:20px">
+        <div class="upcoming-card-header">
+          <h3>✦ Planes de estudio con IA</h3>
+          <a href="nueva-materia.html" class="btn btn-primary btn-sm">Nueva materia →</a>
+        </div>
+        <div class="upcoming-card-body" id="planes-list">
+          <p class="empty-msg" style="padding:16px 20px">
+            Todavía no generaste ningún plan. <a href="nueva-materia.html">Empezá acá →</a>
+          </p>
+        </div>
+      </div>
+
       <!-- Upcoming exams -->
       <div class="upcoming-card">
         <div class="upcoming-card-header">
@@ -166,6 +183,30 @@
       const upcoming = examenes
         .filter(e => new Date(e.fecha + 'T00:00:00') >= today)
         .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+      // Planes de IA activos
+      const planesListEl = document.getElementById('planes-list');
+      const planesKeys = Object.keys(localStorage).filter(k => k.startsWith('plan_') && !k.startsWith('plan_meta_') && !k.startsWith('plan_') + 'progreso');
+      const planesReales = planesKeys.filter(k => !k.startsWith('progreso_'));
+      if (planesReales.length > 0) {
+        planesListEl.innerHTML = planesReales.map(key => {
+          const slug = key.replace('plan_', '');
+          const plan = storageGet(key);
+          if (!plan) return '';
+          const progreso = storageGet('progreso_' + slug) || {};
+          const totalDias = (plan.dias || []).length;
+          const completados = Object.values(progreso).filter(Boolean).length;
+          const pct = totalDias > 0 ? Math.round((completados / totalDias) * 100) : 0;
+          return `
+            <div class="exam-item" style="cursor:pointer" onclick="location.href='plan.html?materia=${slug}'">
+              <div class="exam-info">
+                <strong>${plan.nombreMateria}</strong>
+                <span class="exam-materia">Examen: ${plan.fechaExamen} · ${completados}/${totalDias} días completados</span>
+              </div>
+              <span class="exam-days" style="font-family:'DM Mono',monospace">${pct}%</span>
+            </div>`;
+        }).join('');
+      }
 
       if (upcoming.length > 0) {
         const diff = daysUntil(upcoming[0].fecha);
