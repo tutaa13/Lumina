@@ -67,27 +67,28 @@ Respondé ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto 
 }`;
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: 8192 }
-        })
-      }
-    );
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 8000
+      })
+    });
 
     const data = await response.json();
 
     if (!response.ok) {
       const errMsg = data.error?.message || JSON.stringify(data);
-      console.error('Gemini API error:', response.status, errMsg);
+      console.error('Groq API error:', response.status, errMsg);
       return res.status(500).json({ error: `Error de API (${response.status}): ${errMsg}` });
     }
 
-    const texto = data.candidates[0].content.parts[0].text;
+    const texto = data.choices[0].message.content;
 
     const jsonMatch = texto.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('No se encontró JSON en la respuesta');
