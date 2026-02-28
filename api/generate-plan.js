@@ -68,7 +68,7 @@ Respondé ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto 
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -83,13 +83,6 @@ Respondé ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto 
 
     if (!response.ok) {
       const errMsg = data.error?.message || JSON.stringify(data);
-      // Diagnóstico: listar modelos disponibles
-      try {
-        const modelsRes = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${process.env.GEMINI_API_KEY}`);
-        const modelsData = await modelsRes.json();
-        const names = (modelsData.models || []).map(m => m.name).slice(0, 5).join(' | ');
-        return res.status(500).json({ error: `Modelos disponibles: ${names || JSON.stringify(modelsData)}` });
-      } catch(e) {}
       console.error('Gemini API error:', response.status, errMsg);
       return res.status(500).json({ error: `Error de API (${response.status}): ${errMsg}` });
     }
