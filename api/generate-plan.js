@@ -82,6 +82,13 @@ Respondé ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto 
     });
 
     const data = await response.json();
+
+    if (!response.ok) {
+      const errMsg = data.error?.message || JSON.stringify(data);
+      console.error('Anthropic API error:', response.status, errMsg);
+      return res.status(500).json({ error: `Error de API (${response.status}): ${errMsg}` });
+    }
+
     const texto = data.content[0].text;
 
     const jsonMatch = texto.match(/\{[\s\S]*\}/);
@@ -92,6 +99,6 @@ Respondé ÚNICAMENTE con un JSON válido con esta estructura exacta, sin texto 
 
   } catch (error) {
     console.error('Error generando plan:', error);
-    return res.status(500).json({ error: 'Error al generar el plan. Intentá de nuevo.' });
+    return res.status(500).json({ error: error.message || 'Error al generar el plan. Intentá de nuevo.' });
   }
 }
